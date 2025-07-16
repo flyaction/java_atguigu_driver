@@ -1,6 +1,0 @@
-{
-  "component": true,
-  "usingComponents": {
-    "tm-button": "../../tmui/components/tm-button/tm-button"
-  }
-}

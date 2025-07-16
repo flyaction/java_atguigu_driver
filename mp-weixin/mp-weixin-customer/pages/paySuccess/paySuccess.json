@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "支付成功",
-  "usingComponents": {
-    "tm-icon": "../../tmui/components/tm-icon/tm-icon"
-  }
-}
