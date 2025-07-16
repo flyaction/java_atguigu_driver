@@ -15,4 +15,6 @@ public class WxConfigProperties {
 
     private String appId;
     private String secret;
+
+    
 }
