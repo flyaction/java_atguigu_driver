@@ -60,7 +60,9 @@ public class CustomerController {
     @PostMapping("/updateWxPhone")
     public Result updateWxPhone(@RequestBody UpdateWxPhoneForm updateWxPhoneForm) {
         updateWxPhoneForm.setCustomerId(AuthContextHolder.getUserId());
-        return Result.ok(customerInfoService.updateWxPhoneNumber(updateWxPhoneForm));
+        //return Result.ok(customerInfoService.updateWxPhoneNumber(updateWxPhoneForm));
+        //个人版的小程序获取不到手机号，直接跳过
+        return Result.ok(true);
     }
 }
 
