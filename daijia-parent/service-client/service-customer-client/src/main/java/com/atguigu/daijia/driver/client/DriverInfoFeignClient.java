@@ -5,6 +5,10 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+/**
+ * @author: action
+ * @create: 2025/7/23 09:04
+ **/
 @FeignClient(value = "service-driver")
 public interface DriverInfoFeignClient {
 
