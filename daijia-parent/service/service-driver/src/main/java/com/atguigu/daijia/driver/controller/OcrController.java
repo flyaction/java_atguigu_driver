@@ -2,7 +2,6 @@ package com.atguigu.daijia.driver.controller;
 
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.driver.service.OcrService;
-import com.atguigu.daijia.model.vo.driver.DriverLicenseOcrVo;
 import com.atguigu.daijia.model.vo.driver.IdCardOcrVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +19,15 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping(value="/ocr")
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class OcrController {
-	
 
+    @Autowired
+    private OcrService ocrService;
+
+    @Operation(summary = "身份证识别")
+    @PostMapping("/idCardOcr")
+    public Result<IdCardOcrVo> idCardOcr(@RequestPart("file") MultipartFile file) {
+        IdCardOcrVo idCardOcrVo = ocrService.idCardOcr(file);
+        return Result.ok(idCardOcrVo);
+    }
 }
 
