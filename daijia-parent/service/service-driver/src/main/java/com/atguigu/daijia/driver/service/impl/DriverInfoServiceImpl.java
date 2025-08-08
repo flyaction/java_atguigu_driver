@@ -15,6 +15,7 @@ import com.atguigu.daijia.model.entity.driver.DriverAccount;
 import com.atguigu.daijia.model.entity.driver.DriverInfo;
 import com.atguigu.daijia.model.entity.driver.DriverLoginLog;
 import com.atguigu.daijia.model.entity.driver.DriverSet;
+import com.atguigu.daijia.model.form.driver.UpdateDriverAuthInfoForm;
 import com.atguigu.daijia.model.vo.driver.DriverAuthInfoVo;
 import com.atguigu.daijia.model.vo.driver.DriverLoginVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -134,5 +135,21 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
         driverAuthInfoVo.setDriverLicenseHandShowUrl(cosService.getImageUrl(driverAuthInfoVo.getDriverLicenseHandUrl()));
 
         return driverAuthInfoVo;
+    }
+
+    //更新司机认证信息
+    @Override
+    public Boolean updateDriverAuthInfo(UpdateDriverAuthInfoForm updateDriverAuthInfoForm) {
+        //获取司机id
+        Long driverId = updateDriverAuthInfoForm.getDriverId();
+
+        //修改操作
+        DriverInfo driverInfo = new DriverInfo();
+        driverInfo.setId(driverId);
+        BeanUtils.copyProperties(updateDriverAuthInfoForm,driverInfo);
+
+        //int i = driverInfoMapper.updateById(driverInfo);
+        boolean update = this.updateById(driverInfo);
+        return update;
     }
 }
