@@ -25,7 +25,7 @@ public class MapServiceImpl implements MapService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("tencent.cloud.map")
+    @Value("${tencent.map.key}")
     private String key;
 
     //计算驾驶线路
@@ -36,6 +36,7 @@ public class MapServiceImpl implements MapService {
         //定义调用腾讯地址
         String url = "https://apis.map.qq.com/ws/direction/v1/driving/?from={from}&to={to}&key={key}";
 
+
         //封装传递参数
         Map<String,String> map = new HashMap();
         //开始位置
@@ -44,10 +45,11 @@ public class MapServiceImpl implements MapService {
         //结束位置
         map.put("to",calculateDrivingLineForm.getEndPointLatitude()+","+calculateDrivingLineForm.getEndPointLongitude());
         //key
-        map.put("key",key);
+        map.put("key", key);
 
         //使用RestTemplate调用 GET
         JSONObject result = restTemplate.getForObject(url, JSONObject.class, map);
+
         //处理返回结果
         //判断调用是否成功
         int status = result.getIntValue("status");
