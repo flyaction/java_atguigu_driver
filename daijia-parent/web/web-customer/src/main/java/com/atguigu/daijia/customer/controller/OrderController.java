@@ -36,7 +36,7 @@ public class OrderController {
     }
 
     @Operation(summary = "预估订单数据")
-    //@GuiguLogin
+    @GuiguLogin
     @PostMapping("/expectOrder")
     public Result<ExpectOrderVo> expectOrder(@RequestBody ExpectOrderForm expectOrderForm) {
         return Result.ok(orderService.expectOrder(expectOrderForm));
@@ -48,6 +48,13 @@ public class OrderController {
     public Result<Long> submitOrder(@RequestBody SubmitOrderForm submitOrderForm) {
         submitOrderForm.setCustomerId(AuthContextHolder.getUserId());
         return Result.ok(orderService.submitOrder(submitOrderForm));
+    }
+
+    @Operation(summary = "查询订单状态")
+    @GuiguLogin
+    @GetMapping("/getOrderStatus/{orderId}")
+    public Result<Integer> getOrderStatus(@PathVariable Long orderId) {
+        return Result.ok(orderService.getOrderStatus(orderId));
     }
 
 }
