@@ -1,0 +1,9 @@
+2025-08-20 11:19:12 [com.xxl.job.core.thread.JobThread#run]-[133]-[xxl-job, JobThread-1-1755659952805] <br>----------- xxl-job job execute start -----------<br>----------- Param:
+2025-08-20 11:19:12 [com.xxl.job.executor.service.jobhandler.SampleXxlJob#demoJobHandler]-[41]-[xxl-job, JobThread-1-1755659952805] XXL-JOB, Hello World.
+2025-08-20 11:19:12 [com.xxl.job.executor.service.jobhandler.SampleXxlJob#demoJobHandler]-[44]-[xxl-job, JobThread-1-1755659952805] beat at:0
+2025-08-20 11:19:14 [com.xxl.job.executor.service.jobhandler.SampleXxlJob#demoJobHandler]-[44]-[xxl-job, JobThread-1-1755659952805] beat at:1
+2025-08-20 11:19:16 [com.xxl.job.executor.service.jobhandler.SampleXxlJob#demoJobHandler]-[44]-[xxl-job, JobThread-1-1755659952805] beat at:2
+2025-08-20 11:19:18 [com.xxl.job.executor.service.jobhandler.SampleXxlJob#demoJobHandler]-[44]-[xxl-job, JobThread-1-1755659952805] beat at:3
+2025-08-20 11:19:20 [com.xxl.job.executor.service.jobhandler.SampleXxlJob#demoJobHandler]-[44]-[xxl-job, JobThread-1-1755659952805] beat at:4
+2025-08-20 11:19:22 [com.xxl.job.core.thread.JobThread#run]-[179]-[xxl-job, JobThread-1-1755659952805] <br>----------- xxl-job job execute end(finish) -----------<br>----------- Result: handleCode=200, handleMsg = null
+2025-08-20 11:19:22 [com.xxl.job.core.thread.TriggerCallbackThread#callbackLog]-[197]-[xxl-job, executor TriggerCallbackThread] <br>----------- xxl-job job callback finish.
