@@ -79,6 +79,13 @@ public class DriverController {
         return Result.ok(driverService.isFaceRecognition(driverId));
     }
 
+    @Operation(summary = "验证司机人脸")
+    @GuiguLogin
+    @PostMapping("/verifyDriverFace")
+    public Result<Boolean> verifyDriverFace(@RequestBody DriverFaceModelForm driverFaceModelForm) {
+        driverFaceModelForm.setDriverId(AuthContextHolder.getUserId());
+        return Result.ok(driverService.verifyDriverFace(driverFaceModelForm));
+    }
 
 }
 
