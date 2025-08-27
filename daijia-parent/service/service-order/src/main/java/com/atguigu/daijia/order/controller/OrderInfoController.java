@@ -42,5 +42,11 @@ public class OrderInfoController {
     public Result<CurrentOrderInfoVo> searchCustomerCurrentOrder(@PathVariable Long customerId) {
         return Result.ok(orderInfoService.searchCustomerCurrentOrder(customerId));
     }
+
+    @Operation(summary = "司机端查找当前订单")
+    @GetMapping("/searchDriverCurrentOrder/{driverId}")
+    public Result<CurrentOrderInfoVo> searchDriverCurrentOrder(@PathVariable Long driverId) {
+        return Result.ok(orderInfoService.searchDriverCurrentOrder(driverId));
+    }
 }
 

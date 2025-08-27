@@ -172,6 +172,35 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return currentOrderInfoVo;
     }
 
+    //司机端查找当前订单
+    @Override
+    public CurrentOrderInfoVo searchDriverCurrentOrder(Long driverId) {
+        //封装条件
+        LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OrderInfo::getDriverId,driverId);
+        Integer[] statusArray = {
+                OrderStatus.ACCEPTED.getStatus(),
+                OrderStatus.DRIVER_ARRIVED.getStatus(),
+                OrderStatus.UPDATE_CART_INFO.getStatus(),
+                OrderStatus.START_SERVICE.getStatus(),
+                OrderStatus.END_SERVICE.getStatus()
+        };
+        wrapper.in(OrderInfo::getStatus,statusArray);
+        wrapper.orderByDesc(OrderInfo::getId);
+        wrapper.last(" limit 1");
+        OrderInfo orderInfo = orderInfoMapper.selectOne(wrapper);
+        //封装到vo
+        CurrentOrderInfoVo currentOrderInfoVo = new CurrentOrderInfoVo();
+        if(null != orderInfo) {
+            currentOrderInfoVo.setStatus(orderInfo.getStatus());
+            currentOrderInfoVo.setOrderId(orderInfo.getId());
+            currentOrderInfoVo.setIsHasCurrentOrder(true);
+        } else {
+            currentOrderInfoVo.setIsHasCurrentOrder(false);
+        }
+        return currentOrderInfoVo;
+    }
+
     public Boolean robNewOrder2(Long driverId, Long orderId) {
         //判断订单是否存在，通过Redis，减少数据库压力
         if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {

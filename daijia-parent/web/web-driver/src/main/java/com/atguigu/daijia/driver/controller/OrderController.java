@@ -46,9 +46,8 @@ public class OrderController {
     @GuiguLogin
     @GetMapping("/searchDriverCurrentOrder")
     public Result<CurrentOrderInfoVo> searchDriverCurrentOrder() {
-        CurrentOrderInfoVo currentOrderInfoVo = new CurrentOrderInfoVo();
-        currentOrderInfoVo.setIsHasCurrentOrder(false);
-        return Result.ok(currentOrderInfoVo);
+        Long driverId = AuthContextHolder.getUserId();
+        return Result.ok(orderService.searchDriverCurrentOrder(driverId));
     }
 }
 
