@@ -12,6 +12,8 @@ import com.atguigu.daijia.order.mapper.OrderStatusLogMapper;
 import com.atguigu.daijia.order.service.OrderInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -33,6 +35,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private RedissonClient redissonClient;
 
     //乘客下单
     @Override
@@ -75,9 +80,60 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
 
+    //Redisson分布式锁
     //司机抢单
     @Override
     public Boolean robNewOrder(Long driverId, Long orderId) {
+        //判断订单是否存在，通过Redis，减少数据库压力
+        if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {
+            //抢单失败
+            throw new GuiguException(ResultCodeEnum.COB_NEW_ORDER_FAIL);
+        }
+
+        //创建锁
+        RLock lock = redissonClient.getLock(RedisConstant.ROB_NEW_ORDER_LOCK + orderId);
+
+        try {
+            //获取锁
+            boolean flag = lock.tryLock(RedisConstant.ROB_NEW_ORDER_LOCK_WAIT_TIME,RedisConstant.ROB_NEW_ORDER_LOCK_LEASE_TIME, TimeUnit.SECONDS);
+            if(flag) {
+                if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {
+                    //抢单失败
+                    throw new GuiguException(ResultCodeEnum.COB_NEW_ORDER_FAIL);
+                }
+                //司机抢单
+                //修改order_info表订单状态值2：已经接单 + 司机id + 司机接单时间
+                //修改条件：根据订单id
+                LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(OrderInfo::getId,orderId);
+                OrderInfo orderInfo = orderInfoMapper.selectOne(wrapper);
+                //设置
+                orderInfo.setStatus(OrderStatus.ACCEPTED.getStatus());
+                orderInfo.setDriverId(driverId);
+                orderInfo.setAcceptTime(new Date());
+                //调用方法修改
+                int rows = orderInfoMapper.updateById(orderInfo);
+                if(rows != 1) {
+                    //抢单失败
+                    throw new GuiguException(ResultCodeEnum.COB_NEW_ORDER_FAIL);
+                }
+
+                //删除抢单标识
+                redisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK);
+            }
+        }catch (Exception e) {
+            //抢单失败
+            throw new GuiguException(ResultCodeEnum.COB_NEW_ORDER_FAIL);
+        }finally {
+            //释放
+            if(lock.isLocked()) {
+                lock.unlock();
+            }
+        }
+        return true;
+    }
+
+    public Boolean robNewOrder2(Long driverId, Long orderId) {
         //判断订单是否存在，通过Redis，减少数据库压力
         if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {
             //抢单失败
