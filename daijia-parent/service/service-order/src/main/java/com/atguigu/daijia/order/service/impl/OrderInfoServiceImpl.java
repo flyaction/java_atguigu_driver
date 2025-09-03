@@ -201,6 +201,27 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return currentOrderInfoVo;
     }
 
+    //司机到达起始点
+    @Override
+    public Boolean driverArriveStartLocation(Long orderId, Long driverId) {
+        // 更新订单状态和到达时间，条件：orderId + driverId
+        LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OrderInfo::getId,orderId);
+        wrapper.eq(OrderInfo::getDriverId,driverId);
+
+        OrderInfo orderInfo = new OrderInfo();
+        orderInfo.setStatus(OrderStatus.DRIVER_ARRIVED.getStatus());
+        orderInfo.setArriveTime(new Date());
+
+        int rows = orderInfoMapper.update(orderInfo, wrapper);
+
+        if(rows == 1) {
+            return true;
+        } else {
+            throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
+        }
+    }
+
     public Boolean robNewOrder2(Long driverId, Long orderId) {
         //判断订单是否存在，通过Redis，减少数据库压力
         if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {
