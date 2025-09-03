@@ -36,6 +36,14 @@ public interface XxlJobService {
 	 */
 	public ReturnT<String> add(XxlJobInfo jobInfo, XxlJobUser loginUser);
 
+
+	/**
+	 * add job
+	 * @param jobInfo
+	 * @return
+	 */
+	public ReturnT<String> add(XxlJobInfo jobInfo);
+
 	/**
 	 * update job
 	 *
@@ -43,6 +51,14 @@ public interface XxlJobService {
 	 * @return
 	 */
 	public ReturnT<String> update(XxlJobInfo jobInfo, XxlJobUser loginUser);
+
+
+	/**
+	 * update job
+	 * @param jobInfo
+	 * @return
+	 */
+	public ReturnT<String> update(XxlJobInfo jobInfo);
 
 	/**
 	 * remove job
