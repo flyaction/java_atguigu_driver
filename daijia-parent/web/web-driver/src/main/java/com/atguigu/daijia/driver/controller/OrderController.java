@@ -51,6 +51,14 @@ public class OrderController {
         return Result.ok(orderService.searchDriverCurrentOrder(driverId));
     }
 
+    @Operation(summary = "司机抢单")
+    @GuiguLogin
+    @GetMapping("/robNewOrder/{orderId}")
+    public Result<Boolean> robNewOrder(@PathVariable Long orderId) {
+        Long driverId = AuthContextHolder.getUserId();
+        return Result.ok(orderService.robNewOrder(driverId, orderId));
+    }
+
     @Operation(summary = "获取订单账单详细信息")
     @GuiguLogin
     @GetMapping("/getOrderInfo/{orderId}")
