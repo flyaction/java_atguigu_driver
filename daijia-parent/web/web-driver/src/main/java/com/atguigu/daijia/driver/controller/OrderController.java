@@ -3,8 +3,10 @@ package com.atguigu.daijia.driver.controller;
 import com.atguigu.daijia.common.login.GuiguLogin;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.util.AuthContextHolder;
+import com.atguigu.daijia.driver.service.LocationService;
 import com.atguigu.daijia.driver.service.OrderService;
 import com.atguigu.daijia.model.form.map.CalculateDrivingLineForm;
+import com.atguigu.daijia.model.form.map.OrderServiceLocationForm;
 import com.atguigu.daijia.model.form.order.StartDriveForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderCartForm;
 import com.atguigu.daijia.model.vo.map.DrivingLineVo;
@@ -28,6 +30,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private LocationService locationService;
 
     @Operation(summary = "查询订单状态")
     @GuiguLogin
@@ -99,6 +104,12 @@ public class OrderController {
         Long driverId = AuthContextHolder.getUserId();
         startDriveForm.setDriverId(driverId);
         return Result.ok(orderService.startDrive(startDriveForm));
+    }
+
+    @Operation(summary = "开始代驾服务：保存代驾服务订单位置")
+    @PostMapping("/saveOrderServiceLocation")
+    public Result<Boolean> saveOrderServiceLocation(@RequestBody List<OrderServiceLocationForm> orderLocationServiceFormList) {
+        return Result.ok(locationService.saveOrderServiceLocation(orderLocationServiceFormList));
     }
 
 }
