@@ -4,8 +4,12 @@ import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.form.map.CalculateDrivingLineForm;
 import com.atguigu.daijia.model.vo.map.DrivingLineVo;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.math.BigDecimal;
 
 @FeignClient(value = "service-map")
 public interface MapFeignClient {
@@ -17,5 +21,13 @@ public interface MapFeignClient {
      */
     @PostMapping("/map/calculateDrivingLine")
     Result<DrivingLineVo> calculateDrivingLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm);
+
+    /**
+     * 代驾服务：计算订单实际里程
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/map/location/calculateOrderRealDistance/{orderId}")
+    Result<BigDecimal> calculateOrderRealDistance(@PathVariable Long orderId);
 
 }
