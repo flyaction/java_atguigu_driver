@@ -22,12 +22,6 @@ public interface MapFeignClient {
     @PostMapping("/map/calculateDrivingLine")
     Result<DrivingLineVo> calculateDrivingLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm);
 
-    /**
-     * 代驾服务：计算订单实际里程
-     * @param orderId
-     * @return
-     */
-    @GetMapping("/map/location/calculateOrderRealDistance/{orderId}")
-    Result<BigDecimal> calculateOrderRealDistance(@PathVariable Long orderId);
+
 
 }
