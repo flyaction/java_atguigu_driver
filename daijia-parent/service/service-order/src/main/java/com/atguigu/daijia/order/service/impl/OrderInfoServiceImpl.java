@@ -277,6 +277,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return true;
     }
 
+    //根据时间段获取订单数
+    @Override
+    public Long getOrderNumByTime(String startTime, String endTime) {
+        // 09 <= time < 10   <= time1  <    11
+        LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ge(OrderInfo::getStartServiceTime,startTime);
+        wrapper.lt(OrderInfo::getStartServiceTime,endTime);
+        Long count = orderInfoMapper.selectCount(wrapper);
+        return count;
+    }
+
     public Boolean robNewOrder2(Long driverId, Long orderId) {
         //判断订单是否存在，通过Redis，减少数据库压力
         if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {
