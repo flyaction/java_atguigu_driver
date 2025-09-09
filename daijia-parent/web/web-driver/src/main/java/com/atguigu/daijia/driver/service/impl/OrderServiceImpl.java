@@ -392,4 +392,10 @@ public class OrderServiceImpl implements OrderService {
     public PageVo findDriverOrderPage(Long driverId, Long page, Long limit) {
         return orderInfoFeignClient.findDriverOrderPage(driverId,page,limit).getData();
     }
+
+    //司机发送账单信息
+    @Override
+    public Boolean sendOrderBillInfo(Long orderId, Long driverId) {
+        return orderInfoFeignClient.sendOrderBillInfo(orderId, driverId).getData();
+    }
 }
