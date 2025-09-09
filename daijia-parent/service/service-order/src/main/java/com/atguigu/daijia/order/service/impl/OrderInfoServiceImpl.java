@@ -346,6 +346,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return new PageVo<>(pageInfo.getRecords(),pageInfo.getPages(),pageInfo.getTotal());
     }
 
+    //获取司机订单分页列表
+    @Override
+    public PageVo findDriverOrderPage(Page<OrderInfo> pageParam, Long driverId) {
+        IPage<OrderListVo> pageInfo =  orderInfoMapper.selectDriverOrderPage(pageParam,driverId);
+        return new PageVo<>(pageInfo.getRecords(),pageInfo.getPages(),pageInfo.getTotal());
+    }
+
     public Boolean robNewOrder2(Long driverId, Long orderId) {
         //判断订单是否存在，通过Redis，减少数据库压力
         if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {
