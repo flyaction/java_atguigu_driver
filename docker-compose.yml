@@ -1,14 +1,14 @@
 services:
   minio:
-    image: quay.io/minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: minio
-    command: server /data --console-address ":9001"
+    command: server /data --console-address ":9090"
     environment:
       MINIO_ROOT_USER: minioadmin  # 默认管理员用户名
       MINIO_ROOT_PASSWORD: minioadmin  # 默认管理员密码
     ports:
-      - "9002:9000"  # API 端口
-      - "9001:9001"  # 控制台端口
+      - "9001:9000"  # API 端口
+      - "9090:9090"  # 控制台端口
     volumes:
       - minio_data:/data  # 持久化存储
     restart: unless-stopped
@@ -24,6 +24,18 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped  
 
+  mongodb:
+    image: mongo:7.0.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+    volumes:
+      - mongodb_data:/data/db  
+
 volumes:
   minio_data:
   rabbitmq_data:
+  mongodb_data:
