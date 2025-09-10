@@ -23,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-
 @Service
 @Slf4j
 public class WxPayServiceImpl implements WxPayService {
@@ -59,7 +57,11 @@ public class WxPayServiceImpl implements WxPayService {
             //3 创建request对象，封装微信支付需要参数
             PrepayRequest request = new PrepayRequest();
             Amount amount = new Amount();
-            amount.setTotal(paymentInfoForm.getAmount().multiply(new BigDecimal(100)).intValue());
+
+            //amount.setTotal(paymentInfoForm.getAmount().multiply(new BigDecimal(100)).intValue());
+            //为了测试支付，设置金额 1分
+            amount.setTotal(1);
+
             request.setAmount(amount);
             request.setAppid(wxPayV3Properties.getAppid());
             request.setMchid(wxPayV3Properties.getMerchantId());
