@@ -50,8 +50,7 @@ public class WxPayServiceImpl implements WxPayService {
             }
 
             //2 创建微信支付使用对象
-            JsapiServiceExtension service =
-                    new JsapiServiceExtension.Builder().config(rsaAutoCertificateConfig).build();
+            JsapiServiceExtension service = new JsapiServiceExtension.Builder().config(rsaAutoCertificateConfig).build();
 
             //3 创建request对象，封装微信支付需要参数
             PrepayRequest request = new PrepayRequest();
@@ -96,8 +95,7 @@ public class WxPayServiceImpl implements WxPayService {
     @Override
     public Boolean queryPayStatus(String orderNo) {
         //1 创建微信操作对象
-        JsapiServiceExtension service =
-                new JsapiServiceExtension.Builder().config(rsaAutoCertificateConfig).build();
+        JsapiServiceExtension service = new JsapiServiceExtension.Builder().config(rsaAutoCertificateConfig).build();
 
         //2 封装查询支付状态需要参数
         QueryOrderByOutTradeNoRequest queryRequest = new QueryOrderByOutTradeNoRequest();
