@@ -1,7 +1,10 @@
 package com.atguigu.daijia.payment.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.atguigu.daijia.common.constant.MqConst;
 import com.atguigu.daijia.common.execption.GuiguException;
 import com.atguigu.daijia.common.result.ResultCodeEnum;
+import com.atguigu.daijia.common.service.RabbitService;
 import com.atguigu.daijia.common.util.RequestUtils;
 import com.atguigu.daijia.model.entity.payment.PaymentInfo;
 import com.atguigu.daijia.model.form.payment.PaymentInfoForm;
@@ -20,8 +23,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 @Slf4j
@@ -33,8 +37,12 @@ public class WxPayServiceImpl implements WxPayService {
     @Autowired
     private RSAAutoCertificateConfig rsaAutoCertificateConfig;
 
-    @Value("wx.v3pay")
+    @Autowired
     private WxPayV3Properties wxPayV3Properties;
+
+    @Autowired
+    private RabbitService rabbitService;
+
 
     @Override
     public WxPrepayVo createWxPayment(PaymentInfoForm paymentInfoForm) {
@@ -158,6 +166,40 @@ public class WxPayServiceImpl implements WxPayService {
         }
     }
 
-    private void handlePayment(Transaction transaction) {
+    //支付成功后续处理
+    @Override
+    public void handleOrder(String orderNo) {
+        //1 远程调用：更新订单状态：已经支付
+
+        //2 远程调用：获取系统奖励，打入到司机账户
+
+        //3 TODO 其他
+
+    }
+
+    //如果支付成功，调用其他方法实现支付后处理逻辑
+    public void handlePayment(Transaction transaction) {
+
+        //1 更新支付记录，状态修改为 已经支付
+        //订单编号
+        String orderNo = transaction.getOutTradeNo();
+        //根据订单编号查询支付记录
+        LambdaQueryWrapper<PaymentInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PaymentInfo::getOrderNo,orderNo);
+        PaymentInfo paymentInfo = paymentInfoMapper.selectOne(wrapper);
+        //如果已经支付，不需要更新
+        if(paymentInfo.getPaymentStatus() == 1) {
+            return;
+        }
+        paymentInfo.setPaymentStatus(1);
+        paymentInfo.setOrderNo(transaction.getOutTradeNo());
+        paymentInfo.setTransactionId(transaction.getTransactionId());
+        paymentInfo.setCallbackTime(new Date());
+        paymentInfo.setCallbackContent(JSON.toJSONString(transaction));
+        paymentInfoMapper.updateById(paymentInfo);
+
+        //2 发送端：发送mq消息，传递 订单编号
+        //  接收端：获取订单编号，完成后续处理
+        rabbitService.sendMessage(MqConst.EXCHANGE_ORDER, MqConst.ROUTING_PAY_SUCCESS, orderNo);
     }
 }
