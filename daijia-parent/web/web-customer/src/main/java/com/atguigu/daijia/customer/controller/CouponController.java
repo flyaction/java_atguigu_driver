@@ -4,10 +4,9 @@ import com.atguigu.daijia.common.login.GuiguLogin;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.util.AuthContextHolder;
 import com.atguigu.daijia.customer.service.CouponService;
-import com.atguigu.daijia.model.entity.coupon.CouponInfo;
 import com.atguigu.daijia.model.vo.base.PageVo;
 import com.atguigu.daijia.model.vo.coupon.NoReceiveCouponVo;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.atguigu.daijia.model.vo.coupon.NoUseCouponVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +37,20 @@ public class CouponController {
     ){
         Long customerId = AuthContextHolder.getUserId();
         PageVo<NoReceiveCouponVo> pageVo = couponService.findNoReceivePage(customerId,page,limit);
+        return Result.ok(pageVo);
+    }
+
+    @Operation(summary = "查询未使用优惠券分页列表")
+    @GuiguLogin
+    @GetMapping("findNoUsePage/{customerId}/{page}/{limit}")
+    public Result<PageVo<NoUseCouponVo>> findNoUsePage(
+            @Parameter(name = "page", description = "当前页码", required = true)
+            @PathVariable Long page,
+            @Parameter(name = "limit", description = "每页记录数", required = true)
+            @PathVariable Long limit
+    ){
+        Long customerId = AuthContextHolder.getUserId();
+        PageVo<NoUseCouponVo> pageVo = couponService.findNoUsePage(customerId,page,limit);
         return Result.ok(pageVo);
     }
 }
