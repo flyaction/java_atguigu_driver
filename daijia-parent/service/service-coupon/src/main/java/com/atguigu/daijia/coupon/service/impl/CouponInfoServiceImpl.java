@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -194,7 +195,12 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
 
     private AvailableCouponVo buildBestNoUseCouponVo(NoUseCouponVo noUseCouponVo, BigDecimal reduceAmount) {
 
-        return null;
+        AvailableCouponVo bestNoUseCouponVo = new AvailableCouponVo();
+        BeanUtils.copyProperties(noUseCouponVo,bestNoUseCouponVo);
+        bestNoUseCouponVo.setCouponId(noUseCouponVo.getId());
+        bestNoUseCouponVo.setReduceAmount(reduceAmount);
+
+        return bestNoUseCouponVo;
     }
 
     private void saveCustomerCoupon(Long customerId, Long couponId, Date expireTime) {
