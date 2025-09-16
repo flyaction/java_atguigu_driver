@@ -29,7 +29,7 @@ public class CouponController {
 
     @Operation(summary = "查询未领取优惠券分页列表")
     @GuiguLogin
-    @GetMapping("findNoReceivePage/{customerId}/{page}/{limit}")
+    @GetMapping("/findNoReceivePage/{customerId}/{page}/{limit}")
     public Result<PageVo<NoReceiveCouponVo>> findNoReceivePage(
             @Parameter(name = "page", description = "当前页码", required = true)
             @PathVariable Long page,
@@ -43,7 +43,7 @@ public class CouponController {
 
     @Operation(summary = "查询未使用优惠券分页列表")
     @GuiguLogin
-    @GetMapping("findNoUsePage/{customerId}/{page}/{limit}")
+    @GetMapping("/findNoUsePage/{customerId}/{page}/{limit}")
     public Result<PageVo<NoUseCouponVo>> findNoUsePage(
             @Parameter(name = "page", description = "当前页码", required = true)
             @PathVariable Long page,
@@ -58,7 +58,7 @@ public class CouponController {
 
     @Operation(summary = "查询已使用优惠券分页列表")
     @GuiguLogin
-    @GetMapping("findUsedPage/{customerId}/{page}/{limit}")
+    @GetMapping("/findUsedPage/{customerId}/{page}/{limit}")
     public Result<PageVo<UsedCouponVo>> findUsedPage(
             @Parameter(name = "page", description = "当前页码", required = true)
             @PathVariable Long page,
@@ -69,5 +69,18 @@ public class CouponController {
         PageVo<UsedCouponVo> pageVo = couponService.findUsedPage(customerId,page,limit);
         return Result.ok(pageVo);
     }
+
+
+    @Operation(summary = "领取优惠券")
+    @GuiguLogin
+    @GetMapping("/receive/{customerId}")
+    public Result<Boolean> receive(@PathVariable Long couponId){
+        Long customerId = AuthContextHolder.getUserId();
+        return Result.ok(couponService.receive(customerId,couponId));
+    }
+
+
+
+
 }
 
