@@ -1,5 +1,6 @@
 package com.atguigu.daijia.coupon.service.impl;
 
+import com.atguigu.daijia.common.constant.RedisConstant;
 import com.atguigu.daijia.common.execption.GuiguException;
 import com.atguigu.daijia.common.result.ResultCodeEnum;
 import com.atguigu.daijia.coupon.mapper.CouponInfoMapper;
@@ -15,10 +16,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -29,6 +33,9 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
 
     @Autowired
     private CustomerCouponMapper customerCouponMapper;
+
+    @Autowired
+    private RedissonClient redissonClient;
 
     @Override
     public PageVo findNoReceivePage(Page<CouponInfo> pageParam, Long customerId) {
@@ -74,27 +81,43 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
             throw new GuiguException(ResultCodeEnum.COUPON_LESS);
         }
 
-        //4 检查每个人限制领取数量
-        if(couponInfo.getPerLimit() > 0) {
-            //统计当前客户已经领取优惠卷数量
-            LambdaQueryWrapper<CustomerCoupon> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(CustomerCoupon::getCouponId,couponId);
-            wrapper.eq(CustomerCoupon::getCustomerId,customerId);
-            Long count = customerCouponMapper.selectCount(wrapper);
-            //判断
-            if(count >= couponInfo.getPerLimit()) {
-                throw new GuiguException(ResultCodeEnum.COUPON_USER_LIMIT);
+
+        RLock lock = null;
+        try {
+            lock = redissonClient.getLock(RedisConstant.COUPON_LOCK + customerId);
+            boolean flag = lock.tryLock(RedisConstant.COUPON_LOCK_WAIT_TIME, RedisConstant.COUPON_LOCK_LEASE_TIME, TimeUnit.SECONDS);
+            if(flag) {
+                //4 检查每个人限制领取数量
+                if(couponInfo.getPerLimit() > 0) {
+                    //统计当前客户已经领取优惠卷数量
+                    LambdaQueryWrapper<CustomerCoupon> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.eq(CustomerCoupon::getCouponId,couponId);
+                    wrapper.eq(CustomerCoupon::getCustomerId,customerId);
+                    Long count = customerCouponMapper.selectCount(wrapper);
+                    //判断
+                    if(count >= couponInfo.getPerLimit()) {
+                        throw new GuiguException(ResultCodeEnum.COUPON_USER_LIMIT);
+                    }
+                }
+
+                //5 领取优惠卷
+                //5.1 更新领取数量
+                int row = couponInfoMapper.updateReceiveCount(couponId);
+
+                //5.2 添加领取记录
+                this.saveCustomerCoupon(customerId,couponId,couponInfo.getExpireTime());
+
+                return true;
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if(lock != null) {
+                lock.unlock();
             }
         }
-
-        //5 领取优惠卷
-        //5.1 更新领取数量
-        int row = couponInfoMapper.updateReceiveCount(couponId);
-
-        //5.2 添加领取记录
-        this.saveCustomerCoupon(customerId,couponId,couponInfo.getExpireTime());
-
         return true;
+
     }
 
     private void saveCustomerCoupon(Long customerId, Long couponId, Date expireTime) {
