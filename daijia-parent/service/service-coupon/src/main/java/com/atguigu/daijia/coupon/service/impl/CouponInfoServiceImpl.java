@@ -8,6 +8,7 @@ import com.atguigu.daijia.coupon.mapper.CustomerCouponMapper;
 import com.atguigu.daijia.coupon.service.CouponInfoService;
 import com.atguigu.daijia.model.entity.coupon.CouponInfo;
 import com.atguigu.daijia.model.entity.coupon.CustomerCoupon;
+import com.atguigu.daijia.model.form.coupon.UseCouponForm;
 import com.atguigu.daijia.model.vo.base.PageVo;
 import com.atguigu.daijia.model.vo.coupon.AvailableCouponVo;
 import com.atguigu.daijia.model.vo.coupon.NoReceiveCouponVo;
@@ -191,6 +192,75 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         }
 
         return availableCouponVoList;
+    }
+
+    //使用优惠卷
+    @Override
+    public BigDecimal useCoupon(UseCouponForm useCouponForm) {
+        //1 根据乘客优惠券id获取乘客优惠卷信息
+        CustomerCoupon customerCoupon = customerCouponMapper.selectById(useCouponForm.getCustomerCouponId());
+        if(customerCoupon == null) {
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        }
+        //2 根据优惠卷id获取优惠卷信息
+        CouponInfo couponInfo = couponInfoMapper.selectById(customerCoupon.getCouponId());
+        if(couponInfo == null) {
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        }
+
+        //3 判断优惠卷是否是当前乘客所持有的
+        if(!customerCoupon.getCustomerId().equals(useCouponForm.getCustomerId())) {
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        }
+
+        //4 判断是否具备优惠卷使用条件
+        //现金和折扣卷，根据使用门槛判断
+        BigDecimal reduceAmount = null;
+        //1 现金券
+        if(couponInfo.getCouponType() == 1) {
+            //没有门槛，订单金额大于优惠减免金额
+            if(couponInfo.getConditionAmount().doubleValue()==0 && useCouponForm.getOrderAmount().subtract(couponInfo.getAmount()).doubleValue()>0) {
+                reduceAmount = couponInfo.getAmount();
+            }
+
+            //有门槛，订单金额大于优惠卷门槛金额
+            if(couponInfo.getConditionAmount().doubleValue()>0 && useCouponForm.getOrderAmount().subtract(couponInfo.getConditionAmount()).doubleValue()>0) {
+                reduceAmount = couponInfo.getAmount();
+            }
+        } else {//2 折扣
+            //折扣后金额
+            BigDecimal discountOrderAmount = useCouponForm.getOrderAmount().multiply(couponInfo.getDiscount()).divide(new BigDecimal("10")).setScale(2, RoundingMode.HALF_UP);
+            //订单优惠金额
+            //2.2.1.没门槛
+            if (couponInfo.getConditionAmount().doubleValue() == 0) {
+                //减免金额
+                reduceAmount = useCouponForm.getOrderAmount().subtract(discountOrderAmount);
+            }
+            //2.2.2.有门槛，订单折扣后金额大于优惠券门槛金额
+            if (couponInfo.getConditionAmount().doubleValue() > 0 && discountOrderAmount.subtract(couponInfo.getConditionAmount()).doubleValue() > 0) {
+                //减免金额
+                reduceAmount = useCouponForm.getOrderAmount().subtract(discountOrderAmount);
+            }
+        }
+
+        //5 如果满足条件，更新两张表数据
+        if(reduceAmount.doubleValue()>0) {
+            //更新coupon_info使用数量
+            //根据id查询优惠卷对象
+            Integer useCount_old = couponInfo.getUseCount();
+            couponInfo.setUseCount(useCount_old+1);
+            couponInfoMapper.updateById(couponInfo);
+
+            //更新customer_coupon
+            CustomerCoupon updateCustomerCoupon = new CustomerCoupon();
+            updateCustomerCoupon.setId(customerCoupon.getId());
+            updateCustomerCoupon.setUsedTime(new Date());
+            updateCustomerCoupon.setOrderId(useCouponForm.getOrderId());
+            customerCouponMapper.updateById(updateCustomerCoupon);
+
+            return reduceAmount;
+        }
+        return null;
     }
 
     private AvailableCouponVo buildBestNoUseCouponVo(NoUseCouponVo noUseCouponVo, BigDecimal reduceAmount) {
