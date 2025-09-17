@@ -17,4 +17,16 @@ public class RabbitService {
         return true;
     }
 
+
+    public boolean sendDealyMessage(String exchange, String routingkey, String message, int delayMillis) {
+
+        rabbitTemplate.convertAndSend(exchange, routingkey,
+                message, messagePostProcessor -> {
+                    messagePostProcessor.getMessageProperties()
+                            .setHeader("x-delay", delayMillis); // 设置延迟时间（毫秒）
+                    return messagePostProcessor;
+                });
+        return true;
+
+    }
 }
